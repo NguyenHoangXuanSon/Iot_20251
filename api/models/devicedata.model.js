@@ -10,11 +10,12 @@ const DeviceDataSchema = mongoose.Schema({
     },
     timestamp: {
         type: Date,
-        default: Date.now()
+        default: Date.now
     },
     deviceId: {
         type: mongoose.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'Device'
     }
 });
 

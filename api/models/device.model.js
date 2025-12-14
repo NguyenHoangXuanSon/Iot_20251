@@ -20,8 +20,8 @@ const DeviceSchema = mongoose.Schema({
         required: true
     },
     value: {
-        type: Number,
-        default: 0
+        type: mongoose.Schema.Types.Mixed,
+        default: null
     }
 }, {
     timestamps: true

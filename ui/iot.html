@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/page/employee.css">
+    <title>HAPPYHOME.VN - Kiến tạo mái ấm gia đình</title>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="header__left">
+                <div class="header__sibar"></div>
+            </div>
+            <div class="header__right">
+                <div>
+                    <div class="page__header--title heading">Hệ thống giám sát nhà từ xa</div>
+                </div>
+                <div class="user">
+                    <div class="user__name" id="nameUser">User</div>
+                    <div class="user__avatar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="menu">
+            <div class="item icon__dashboard item--selected" name="item_dashboard">Tổng quan</div>
+            <div class="item icon__temperature" name="item_temperature" onclick="renderTemperature()">Nhiệt độ</div>
+            <div class="item icon__humidity" name="item_humidity" onclick="renderHumidity()">Độ ẩm</div>
+        </div>
+
+        <div class="content">
+            <div class="page__header">
+                <div class="page__toolbar--left">
+                    <select name="" id="roomListing" onchange="getDeviceByRoom()">
+                        <!-- Option sẽ được load từ API -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="page__content" id="content_dashboard">
+                <!-- Nội dung dashboard sẽ được load từ API -->
+            </div>
+
+            <div class="page__content" id="content_temperature" style="display: none;">
+                <br>
+                <div class="page__header--title heading" style="font-size: 16px;">Thống kê nhiệt độ</div>
+                <br>
+                <!-- Đã sửa: Thêm ID cụ thể -->
+                <div id="chartContainer_temp" style="height: 370px; width: 100%;"></div>
+            </div>
+
+            <div class="page__content" id="content_humidity" style="display: none;">
+                <br>
+                <div class="page__header--title heading" style="font-size: 16px;">Thống kê độ ẩm</div>
+                <br>
+                <!-- Đã sửa: Thêm ID cụ thể -->
+                <div id="chartContainer_hum" style="height: 370px; width: 100%;"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Nhúng thư viện -->
+    <script type="text/javascript" src="./js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="./js/jquery.canvasjs.min.js"></script>
+    <script type="text/javascript" src="./js/mqttws31.js"></script>
+
+    <!-- Nhúng các js khác -->
+    <script src="./js/pages/pub.js"></script>
+    <script src="./js/pages/sub.js"></script>
+    <script src="./js/pages/iot.js"></script>
+
+    <script>
+        var token = localStorage.getItem("token");
+        var baseUrl = "http://localhost:3000";
+        var currentRoomId = null; // Biến lưu phòng đang chọn
+
+        // Set tên User
+        $("#nameUser").text(localStorage.getItem("nameUser") || "Admin");
+
+        // 1. Load danh sách phòng khi vào trang
+        $.ajax({
+            url: baseUrl + "/api/room",
+            type: "get",
+            dataType: "json",
+            headers: { 'Authorization': token },
+            success: function(data) {
+                $('#roomListing').empty();
+                if(data.length > 0) {
+                    for (let i = 0; i < data.length; i++) {
+                        $('#roomListing').append($('<option>', {
+                            value: data[i]._id,
+                            text: data[i].name
+                        }));
+                    };
+                    // Tự động load dữ liệu phòng đầu tiên
+                    getDeviceByRoom(); 
+                }
+            }
+        });
+
+        // 2. Hàm xử lý khi chọn phòng (Dropdown thay đổi)
+        function getDeviceByRoom() {
+            currentRoomId = $("#roomListing :selected").val();
+            
+            // Nếu đang ở tab Dashboard thì load thiết bị
+            if ($(".icon__dashboard").hasClass("item--selected")) {
+                loadDashboard(currentRoomId);
+            }
+            // Nếu đang ở tab Nhiệt độ thì vẽ biểu đồ nhiệt
+            else if ($(".icon__temperature").hasClass("item--selected")) {
+                renderTemperature();
+            }
+            // Nếu đang ở tab Độ ẩm thì vẽ biểu đồ ẩm
+            else if ($(".icon__humidity").hasClass("item--selected")) {
+                renderHumidity();
+            }
+        }
+
+        // 3. Xử lý hiển thị Dashboard (Các dòng chữ xanh đỏ)
+        function loadDashboard(roomId) {
+            if(!roomId) return;
+            $.ajax({
+                url: baseUrl + `/api/device/room/${roomId}`,
+                type: "get",
+                headers: { 'Authorization': token },
+                success: function(data) {
+                    const leds = data.leds || [];
+                    const sensors = data.sensors || [];
+                    
+                    $("#content_dashboard").empty();
+                    $("#content_dashboard").append("<br>");
+
+                    // Hiển thị Đèn (Nếu có)
+                    leds.forEach(led => {
+                        let btnClass = led.status == "ON" ? "button__icon--lamp--on" : "button__icon--lamp--off";
+                        let btnText = led.status == "ON" ? "Đang Bật" : "Đang Tắt";
+                        
+                        let str = `
+                            <div style="margin-bottom: 20px;">
+                                <div class="page__content--title">${led.deviceName}:</div>
+                                <button id='${led._id}' class="button__icon button__icon--lamp ${btnClass}" onclick="changeLampStatus('${led._id}')">${btnText}</button>
+                            </div>`;
+                        $("#content_dashboard").append(str);
+                    });
+
+                    // Hiển thị Cảm biến (DHT11 Sensor)
+                    sensors.forEach(sensor => {
+                        // Logic mới: Nếu là DHT11 Sensor thì hiện cả 2 dòng
+                        if (sensor.deviceName === "DHT11 Sensor") {
+                            // Kiểm tra xem value có dữ liệu không
+                            let temp = (sensor.value && sensor.value.temp) ? sensor.value.temp : 0;
+                            let hum = (sensor.value && sensor.value.hum) ? sensor.value.hum : 0;
+
+                            let str = `
+                                <div style="margin-top: 20px; border: 1px solid #ccc; padding: 10px; border-radius: 8px; width: fit-content;">
+                                    <h3 style="margin: 0 0 10px 0;">${sensor.deviceName}</h3>
+                                    <div class="page__content--title" style="color: red; font-size: 18px;">
+                                        🌡️ Nhiệt độ: ${temp} °C
+                                    </div>
+                                    <div class="page__content--title" style="color: blue; font-size: 18px; margin-top: 5px;">
+                                        💧 Độ ẩm: ${hum} %
+                                    </div>
+                                </div>`;
+                            $("#content_dashboard").append(str);
+                        }
+                    });
+                }
+            });
+        }
+
+        // 4. Xử lý Click Menu
+        $(".icon__dashboard").click(function() {
+            switchMenu(this, "#content_dashboard");
+            getDeviceByRoom(); // Load lại dashboard
+        });
+
+        $(".icon__temperature").click(function() {
+            switchMenu(this, "#content_temperature");
+            renderTemperature(); // Vẽ biểu đồ nhiệt
+        });
+
+        $(".icon__humidity").click(function() {
+            switchMenu(this, "#content_humidity");
+            renderHumidity(); // Vẽ biểu đồ ẩm
+        });
+
+        function switchMenu(element, contentId) {
+            $(".item").removeClass("item--selected");
+            $(element).addClass("item--selected");
+            $(".page__content").hide();
+            $(contentId).show();
+        }
+
+        // 5. Vẽ biểu đồ Nhiệt độ
+        function renderTemperature() {
+            $.ajax({
+                url: baseUrl + "/api/data",
+                type: "GET",
+                headers: { 'Authorization': token },
+                success: function(response) {
+                    console.log("API trả về:", response); // DEBUG
+                    var dataPoints = [];
+                    
+                    response.forEach(function(item) {
+                        // Lấy tên thiết bị - ưu tiên item.name, sau đó mới check deviceId
+                        var devName = item.name || (item.deviceId && item.deviceId.deviceName) || "unknown";
+                        console.log("Tên thiết bị:", devName, "| Value:", item.value); // DEBUG
+                        
+                        // LOGIC SỬA: Chỉ lấy dữ liệu của DHT11 Sensor và lấy trường .temp
+                        if ((devName === "DHT11 Sensor" || devName === "DHT11_Sensor") && item.value && item.value.temp) {
+                            dataPoints.push({
+                                x: new Date(item.timestamp),
+                                y: parseFloat(item.value.temp) // Lấy nhiệt độ
+                            });
+                        }
+                    });
+
+                    console.log("DataPoints cho biểu đồ:", dataPoints); // DEBUG
+
+                    // Sắp xếp lại theo thời gian tăng dần để biểu đồ vẽ đúng
+                    dataPoints.sort((a, b) => a.x - b.x);
+
+                    var chart = new CanvasJS.Chart("chartContainer_temp", {
+                        animationEnabled: true,
+                        theme: "light2",
+                        title: { text: "Biểu đồ Nhiệt độ (DHT11)" },
+                        axisX: { valueFormatString: "HH:mm:ss" },
+                        axisY: { title: "Nhiệt độ (°C)", suffix: "°C" },
+                        data: [{
+                            type: "line",
+                            xValueType: "dateTime",
+                            color: "red",
+                            dataPoints: dataPoints
+                        }]
+                    });
+                    chart.render();
+                }
+            });
+        }
+
+        // 6. Vẽ biểu đồ Độ ẩm
+        function renderHumidity() {
+            $.ajax({
+                url: baseUrl + "/api/data",
+                type: "GET",
+                headers: { 'Authorization': token },
+                success: function(response) {
+                    var dataPoints = [];
+                    
+                    response.forEach(function(item) {
+                        // Lấy tên thiết bị - ưu tiên item.name, sau đó mới check deviceId
+                        var devName = item.name || (item.deviceId && item.deviceId.deviceName) || "unknown";
+                        
+                        // LOGIC SỬA: Chỉ lấy dữ liệu của DHT11 Sensor và lấy trường .hum
+                        if ((devName === "DHT11 Sensor" || devName === "DHT11_Sensor") && item.value && item.value.hum) {
+                            dataPoints.push({
+                                x: new Date(item.timestamp),
+                                y: parseFloat(item.value.hum) // Lấy độ ẩm
+                            });
+                        }
+                    });
+
+                    // Sắp xếp lại theo thời gian tăng dần
+                    dataPoints.sort((a, b) => a.x - b.x);
+
+                    var chart = new CanvasJS.Chart("chartContainer_hum", {
+                        animationEnabled: true,
+                        theme: "light2",
+                        title: { text: "Biểu đồ Độ ẩm (DHT11)" },
+                        axisX: { valueFormatString: "HH:mm:ss" },
+                        axisY: { title: "Độ ẩm (%)", suffix: "%" },
+                        data: [{
+                            type: "line",
+                            xValueType: "dateTime",
+                            color: "blue",
+                            dataPoints: dataPoints
+                        }]
+                    });
+                    chart.render();
+                }
+            });
+        }
+    </script>
