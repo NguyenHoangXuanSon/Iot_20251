@@ -11,7 +11,8 @@
 
 ### 1. Start Infrastructure (Database & Broker)
 Open a terminal in the **root folder** (where `docker-compose.yml` is located) and run:
-```bash
+    ```bash
+    
     docker-compose up -d
 
 ### 2. Install Dependencies
@@ -39,3 +40,4 @@ Function: Simulates an ESP32 device sending sensor data (Temperature & Humidity)
     node testmq.js
 
 Success: You should see saved to Database logs appearing in Terminal 1.
+
