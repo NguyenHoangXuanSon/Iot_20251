@@ -1,7 +1,7 @@
 ﻿# Iot_20251
 # IoT Backend System
 
-## 🛠 Prerequisites
+## Prerequisites
 * **Docker Desktop** (must be running)
 * **Node.js** installed
 
@@ -36,6 +36,7 @@ Function: Simulates an ESP32 device sending sensor data (Temperature & Humidity)
     node testmq.js
 
 Success: You should see saved to Database logs appearing in Terminal 1.
+
 
 
 
