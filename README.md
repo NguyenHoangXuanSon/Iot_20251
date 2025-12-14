@@ -18,7 +18,6 @@ Open a terminal in the **root folder** (where `docker-compose.yml` is located) a
 ### 2. Install Dependencies
 Navigate to the api folder:
     ``` bash
-    
     cd api
     npm install
 
@@ -29,7 +28,6 @@ Terminal 1: Backend Server
 Function: Runs the API server, listens to MQTT topics, and saves data to MongoDB.
 
     ``` bash
-
     # Inside 'api' folder
     npm start
     Wait until you see: MQTT Subscriber Connected
@@ -42,5 +40,6 @@ Function: Simulates an ESP32 device sending sensor data (Temperature & Humidity)
     node testmq.js
 
 Success: You should see saved to Database logs appearing in Terminal 1.
+
 
 
