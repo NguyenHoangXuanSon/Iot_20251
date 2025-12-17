@@ -1,72 +1,536 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/main.css">
-    <link rel="stylesheet" href="./css/page/employee.css">
-    <title>HAPPYHOME.VN - Kiến tạo mái ấm gia đình</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
+    <title>IoT Hub - Smart Monitoring System</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #1e293b;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #818cf8;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: #94a3b8;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .menu-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        .menu-item i {
+            width: 24px;
+            margin-right: 12px;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .page-title p {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Custom Select Box */
+        .room-select {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-info h3 {
+            font-size: 14px;
+            color: var(--text-gray);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .card-info .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .bg-red-light { background: #fee2e2; color: var(--danger); }
+        .bg-blue-light { background: #dbeafe; color: #3b82f6; }
+        .bg-green-light { background: #d1fae5; color: var(--success); }
+
+        /* CHART SECTION */
+        .chart-section {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-height: 400px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h2 {
+            font-size: 18px;
+            color: var(--text-dark);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #d1fae5;
+            color: #065f46;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        /* Device Controls */
+        .device-section {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .device-section h3 {
+            font-size: 16px;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+        }
+
+        .device-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-device {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-device.on {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-device.off {
+            background: #e5e7eb;
+            color: var(--text-gray);
+        }
+
+        .btn-device:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hide old content areas initially */
+        .page__content {
+            display: none;
+        }
+
+        /* Dashboard Overview Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .info-panel {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-panel h3 {
+            font-size: 16px;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-panel h3 i {
+            color: var(--primary-color);
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list .label {
+            color: var(--text-gray);
+        }
+
+        .info-list .value {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: var(--text-dark);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .summary-card .icon-large {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 12px;
+        }
+
+        .summary-card h4 {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+        }
+
+        .summary-card .big-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <div class="header">
-            <div class="header__left">
-                <div class="header__sibar"></div>
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-cube"></i> IoT Hub
+        </div>
+        <nav>
+            <a href="#" class="menu-item active icon__dashboard" name="item_dashboard">
+                <i class="fa-solid fa-layer-group"></i> Tổng quan
+            </a>
+            <a href="#" class="menu-item icon__temperature" name="item_temperature">
+                <i class="fa-solid fa-temperature-three-quarters"></i> Nhiệt độ
+            </a>
+            <a href="#" class="menu-item icon__humidity" name="item_humidity">
+                <i class="fa-solid fa-droplet"></i> Độ ẩm
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        
+        <!-- Welcome Message -->
+        <div class="welcome-message" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 20px 24px; border-radius: 16px; color: white; margin-bottom: 10px;">
+            <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Xin chào, <span id="userEmail">user@example.com</span></h2>
+            <p style="font-size: 14px; opacity: 0.9;">Chào mừng bạn đến với hệ thống IoT Hub!</p>
+        </div>
+
+        <header class="header">
+            <div class="page-title">
+                <h1>Giám sát Môi trường</h1>
+                <p>Cập nhật lần cuối: <span id="lastUpdated">Vừa xong</span></p>
             </div>
-            <div class="header__right">
-                <div>
-                    <div class="page__header--title heading">Hệ thống giám sát nhà từ xa</div>
+            
+            <div class="header-actions">
+                <select class="room-select" id="roomListing" onchange="getDeviceByRoom()">
+                    <!-- Option sẽ được load từ API -->
+                </select>
+                
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/150?img=12" alt="Admin" class="avatar">
+                    <div style="font-size: 14px; font-weight: 600;" id="nameUser">Admin</div>
                 </div>
-                <div class="user">
-                    <div class="user__name" id="nameUser">User</div>
-                    <div class="user__avatar"></div>
+            </div>
+        </header>
+
+        <!-- Main Stats Cards -->
+        <div class="stats-grid" id="statsSection">
+            <div class="summary-card">
+                <div class="icon-large bg-red-light">
+                    <i class="fa-solid fa-temperature-high"></i>
                 </div>
+                <h4>Nhiệt độ hiện tại</h4>
+                <div class="big-value" id="currentTemp">--°C</div>
+            </div>
+
+            <div class="summary-card">
+                <div class="icon-large bg-blue-light">
+                    <i class="fa-solid fa-droplet"></i>
+                </div>
+                <h4>Độ ẩm không khí</h4>
+                <div class="big-value" id="currentHum">--%</div>
+            </div>
+
+            <div class="summary-card">
+                <div class="icon-large bg-green-light">
+                    <i class="fa-solid fa-wifi"></i>
+                </div>
+                <h4>Trạng thái</h4>
+                <div class="big-value" style="font-size: 22px;" id="deviceStatus">Hoạt động</div>
             </div>
         </div>
-    </div>
 
-    <div class="main">
-        <div class="menu">
-            <div class="item icon__dashboard item--selected" name="item_dashboard">Tổng quan</div>
-            <div class="item icon__temperature" name="item_temperature" onclick="renderTemperature()">Nhiệt độ</div>
-            <div class="item icon__humidity" name="item_humidity" onclick="renderHumidity()">Độ ẩm</div>
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid" id="dashboardSection">
+            <div class="info-panel">
+                <h3><i class="fa-solid fa-circle-info"></i> Thông tin thiết bị</h3>
+                <ul class="info-list">
+                    <li>
+                        <span class="label">Tên thiết bị</span>
+                        <span class="value" id="deviceName">DHT11 Sensor</span>
+                    </li>
+                    <li>
+                        <span class="label">Loại cảm biến</span>
+                        <span class="value">Nhiệt độ & Độ ẩm</span>
+                    </li>
+                    <li>
+                        <span class="label">Phòng</span>
+                        <span class="value" id="roomName">--</span>
+                    </li>
+                    <li>
+                        <span class="label">Trạng thái kết nối</span>
+                        <span class="value" style="color: #10b981;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Đang hoạt động</span>
+                    </li>
+                    <li>
+                        <span class="label">Cập nhật lần cuối</span>
+                        <span class="value" id="lastUpdateInfo">--</span>
+                    </li>
+                </ul>
+            </div>
         </div>
 
-        <div class="content">
-            <div class="page__header">
-                <div class="page__toolbar--left">
-                    <select name="" id="roomListing" onchange="getDeviceByRoom()">
-                        <!-- Option sẽ được load từ API -->
-                    </select>
+        <div class="chart-section" id="chartSection" style="display: none;">
+            <div class="chart-header">
+                <h2 id="chartTitle">Biểu đồ Nhiệt độ (DHT11)</h2>
+                <div class="status-badge">
+                    <div class="dot"></div> Live
                 </div>
             </div>
-
-            <div class="page__content" id="content_dashboard">
-                <!-- Nội dung dashboard sẽ được load từ API -->
-            </div>
-
-            <div class="page__content" id="content_temperature" style="display: none;">
-                <br>
-                <div class="page__header--title heading" style="font-size: 16px;">Thống kê nhiệt độ</div>
-                <br>
-                <!-- Đã sửa: Thêm ID cụ thể -->
-                <div id="chartContainer_temp" style="height: 370px; width: 100%;"></div>
-            </div>
-
-            <div class="page__content" id="content_humidity" style="display: none;">
-                <br>
-                <div class="page__header--title heading" style="font-size: 16px;">Thống kê độ ẩm</div>
-                <br>
-                <!-- Đã sửa: Thêm ID cụ thể -->
-                <div id="chartContainer_hum" style="height: 370px; width: 100%;"></div>
-            </div>
-
+            <!-- Chart containers -->
+            <div id="chartContainer_temp" style="height: 350px; width: 100%;"></div>
+            <div id="chartContainer_hum" style="height: 350px; width: 100%; display: none;"></div>
         </div>
-    </div>
+
+    </main>
 
     <!-- Nhúng thư viện -->
     <script type="text/javascript" src="./js/jquery-3.6.0.min.js"></script>
@@ -85,6 +549,9 @@
 
         // Set tên User
         $("#nameUser").text(localStorage.getItem("nameUser") || "Admin");
+        
+        // Set email User (lấy từ localStorage nếu có)
+        $("#userEmail").text(localStorage.getItem("userEmail") || localStorage.getItem("nameUser") || "user@example.com");
 
         // 1. Load danh sách phòng khi vào trang
         $.ajax({
@@ -111,21 +578,24 @@
         function getDeviceByRoom() {
             currentRoomId = $("#roomListing :selected").val();
             
-            // Nếu đang ở tab Dashboard thì load thiết bị
-            if ($(".icon__dashboard").hasClass("item--selected")) {
-                loadDashboard(currentRoomId);
-            }
+            // Luôn load dashboard để cập nhật card và thiết bị
+            loadDashboard(currentRoomId);
+            
             // Nếu đang ở tab Nhiệt độ thì vẽ biểu đồ nhiệt
-            else if ($(".icon__temperature").hasClass("item--selected")) {
+            if ($(".icon__temperature").hasClass("active")) {
                 renderTemperature();
             }
             // Nếu đang ở tab Độ ẩm thì vẽ biểu đồ ẩm
-            else if ($(".icon__humidity").hasClass("item--selected")) {
+            else if ($(".icon__humidity").hasClass("active")) {
                 renderHumidity();
+            }
+            // Mặc định (tab Tổng quan) thì ẩn biểu đồ
+            else {
+                $("#chartSection").hide();
             }
         }
 
-        // 3. Xử lý hiển thị Dashboard (Các dòng chữ xanh đỏ)
+        // 3. Xử lý hiển thị Dashboard (Cập nhật Cards và nút điều khiển)
         function loadDashboard(roomId) {
             if(!roomId) return;
             $.ajax({
@@ -136,68 +606,81 @@
                     const leds = data.leds || [];
                     const sensors = data.sensors || [];
                     
-                    $("#content_dashboard").empty();
-                    $("#content_dashboard").append("<br>");
+                    // Clear lamp controls
+                    $("#lampControls").empty();
 
                     // Hiển thị Đèn (Nếu có)
                     leds.forEach(led => {
-                        let btnClass = led.status == "ON" ? "button__icon--lamp--on" : "button__icon--lamp--off";
-                        let btnText = led.status == "ON" ? "Đang Bật" : "Đang Tắt";
+                        let btnClass = led.status == "ON" ? "on" : "off";
+                        let btnText = led.deviceName + (led.status == "ON" ? " - Đang Bật" : " - Đang Tắt");
                         
-                        let str = `
-                            <div style="margin-bottom: 20px;">
-                                <div class="page__content--title">${led.deviceName}:</div>
-                                <button id='${led._id}' class="button__icon button__icon--lamp ${btnClass}" onclick="changeLampStatus('${led._id}')">${btnText}</button>
-                            </div>`;
-                        $("#content_dashboard").append(str);
+                        let btn = `<button id='${led._id}' class="btn-device ${btnClass}" onclick="changeLampStatus('${led._id}')">${btnText}</button>`;
+                        $("#lampControls").append(btn);
                     });
 
-                    // Hiển thị Cảm biến (DHT11 Sensor)
+                    // Hiển thị Cảm biến (DHT11 Sensor) lên Cards
                     sensors.forEach(sensor => {
-                        // Logic mới: Nếu là DHT11 Sensor thì hiện cả 2 dòng
-                        if (sensor.deviceName === "DHT11 Sensor") {
-                            // Kiểm tra xem value có dữ liệu không
-                            let temp = (sensor.value && sensor.value.temp) ? sensor.value.temp : 0;
-                            let hum = (sensor.value && sensor.value.hum) ? sensor.value.hum : 0;
+                        if (sensor.deviceName === "DHT11 Sensor" || sensor.deviceName === "DHT11_Sensor") {
+                            let temp = (sensor.value && sensor.value.temp) ? sensor.value.temp : "--";
+                            let hum = (sensor.value && sensor.value.hum) ? sensor.value.hum : "--";
 
-                            let str = `
-                                <div style="margin-top: 20px; border: 1px solid #ccc; padding: 10px; border-radius: 8px; width: fit-content;">
-                                    <h3 style="margin: 0 0 10px 0;">${sensor.deviceName}</h3>
-                                    <div class="page__content--title" style="color: red; font-size: 18px;">
-                                        🌡️ Nhiệt độ: ${temp} °C
-                                    </div>
-                                    <div class="page__content--title" style="color: blue; font-size: 18px; margin-top: 5px;">
-                                        💧 Độ ẩm: ${hum} %
-                                    </div>
-                                </div>`;
-                            $("#content_dashboard").append(str);
+                            $("#currentTemp").text(temp + "°C");
+                            $("#currentHum").text(hum + "%");
+                            $("#deviceStatus").text("Hoạt động");
+                            $("#deviceName").text(sensor.deviceName);
                         }
                     });
+
+                    // Cập nhật thời gian
+                    var now = new Date().toLocaleTimeString();
+                    $("#lastUpdated").text(now);
+                    $("#lastUpdateInfo").text(now);
+                    
+                    // Cập nhật tên phòng
+                    $("#roomName").text($("#roomListing option:selected").text());
                 }
             });
         }
 
         // 4. Xử lý Click Menu
-        $(".icon__dashboard").click(function() {
-            switchMenu(this, "#content_dashboard");
-            getDeviceByRoom(); // Load lại dashboard
+        $(".icon__dashboard").click(function(e) {
+            e.preventDefault();
+            switchMenu(this);
+            // Hiện dashboard section, ẩn biểu đồ
+            $("#statsSection").show();
+            $("#dashboardSection").show();
+            $("#chartSection").hide();
         });
 
-        $(".icon__temperature").click(function() {
-            switchMenu(this, "#content_temperature");
-            renderTemperature(); // Vẽ biểu đồ nhiệt
+        $(".icon__temperature").click(function(e) {
+            e.preventDefault();
+            switchMenu(this);
+            // Ẩn dashboard section, hiện biểu đồ
+            $("#statsSection").hide();
+            $("#dashboardSection").hide();
+            $("#chartSection").show();
+            $("#chartContainer_temp").show();
+            $("#chartContainer_hum").hide();
+            $("#chartTitle").text("Biểu đồ Nhiệt độ (DHT11)");
+            renderTemperature();
         });
 
-        $(".icon__humidity").click(function() {
-            switchMenu(this, "#content_humidity");
-            renderHumidity(); // Vẽ biểu đồ ẩm
+        $(".icon__humidity").click(function(e) {
+            e.preventDefault();
+            switchMenu(this);
+            // Ẩn dashboard section, hiện biểu đồ
+            $("#statsSection").hide();
+            $("#dashboardSection").hide();
+            $("#chartSection").show();
+            $("#chartContainer_temp").hide();
+            $("#chartContainer_hum").show();
+            $("#chartTitle").text("Biểu đồ Độ ẩm (DHT11)");
+            renderHumidity();
         });
 
-        function switchMenu(element, contentId) {
-            $(".item").removeClass("item--selected");
-            $(element).addClass("item--selected");
-            $(".page__content").hide();
-            $(contentId).show();
+        function switchMenu(element) {
+            $(".menu-item").removeClass("active");
+            $(element).addClass("active");
         }
 
         // 5. Vẽ biểu đồ Nhiệt độ
@@ -232,13 +715,15 @@
                     var chart = new CanvasJS.Chart("chartContainer_temp", {
                         animationEnabled: true,
                         theme: "light2",
-                        title: { text: "Biểu đồ Nhiệt độ (DHT11)" },
-                        axisX: { valueFormatString: "HH:mm:ss" },
-                        axisY: { title: "Nhiệt độ (°C)", suffix: "°C" },
+                        title: { text: "" },
+                        axisX: { valueFormatString: "HH:mm:ss", labelFontSize: 12 },
+                        axisY: { title: "Nhiệt độ (°C)", suffix: "°C", gridColor: "#e7e7e7" },
                         data: [{
-                            type: "line",
+                            type: "splineArea",
                             xValueType: "dateTime",
-                            color: "red",
+                            color: "rgba(239, 68, 68, 0.8)",
+                            fillOpacity: 0.3,
+                            lineThickness: 3,
                             dataPoints: dataPoints
                         }]
                     });
@@ -275,13 +760,15 @@
                     var chart = new CanvasJS.Chart("chartContainer_hum", {
                         animationEnabled: true,
                         theme: "light2",
-                        title: { text: "Biểu đồ Độ ẩm (DHT11)" },
-                        axisX: { valueFormatString: "HH:mm:ss" },
-                        axisY: { title: "Độ ẩm (%)", suffix: "%" },
+                        title: { text: "" },
+                        axisX: { valueFormatString: "HH:mm:ss", labelFontSize: 12 },
+                        axisY: { title: "Độ ẩm (%)", suffix: "%", gridColor: "#e7e7e7" },
                         data: [{
-                            type: "line",
+                            type: "splineArea",
                             xValueType: "dateTime",
-                            color: "blue",
+                            color: "rgba(59, 130, 246, 0.8)",
+                            fillOpacity: 0.3,
+                            lineThickness: 3,
                             dataPoints: dataPoints
                         }]
                     });
@@ -290,3 +777,5 @@
             });
         }
     </script>
+</body>
+</html>

@@ -2,96 +2,215 @@
 <html lang="vi">   
 <head>  
 <meta name="viewport" content="width=device-width, initial-scale=1"> 
-<meta charshet="utf-8" />
+<meta charset="utf-8" />
+<title>IoT Hub - Đăng nhập</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<title> Login Page </title>  
-<style>   
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --secondary-color: #1e293b;
+        --bg-color: #f3f4f6;
+        --card-bg: #ffffff;
+        --text-dark: #1f2937;
+        --text-gray: #6b7280;
+    }
 
-Body {  
-    background-image: url('/assets/img/home.gif');
-    background-color: rgb(0, 0, 0);
-    background-repeat: no-repeat;
-    background-size: cover;
-    /* position: relative; */
-    /* backdrop-filter: blur(5px); */
-}  
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
 
-Body::before {
-  content: "";
-  background-color: rgba(0, 0, 0, 0.68); /* black with 50% opacity */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-button {   
-    background-color: #019160;   
-    width: 100%;  
-    color: orange;   
-    padding: 15px;   
-    margin: 10px 0px;   
-    border: none;   
-    cursor: pointer;   
-}   
- .loginForm {   
-        border: 3px solid #f1f1f1;  
-        width: 50%; 
+    body {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
         justify-content: center;
-        margin: 0 auto;
+    }
+
+    .login-container {
+        width: 100%;
+        max-width: 420px;
+        padding: 20px;
+    }
+
+    .login-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .login-logo {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+        color: white;
+    }
+
+    .login-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .login-header p {
+        font-size: 14px;
+        color: var(--text-gray);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-wrapper i {
         position: absolute;
-        top: 35%;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-gray);
+        font-size: 16px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 14px 16px 14px 48px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 14px;
+        color: var(--text-dark);
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .form-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .login-btn:active {
+        transform: translateY(0);
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .login-footer p {
+        font-size: 13px;
+        color: var(--text-gray);
+    }
+
+    .brand-text {
+        position: absolute;
+        bottom: 20px;
         left: 50%;
-        transform: translate(-50%, -50%);
-    }   
- input[type=text], input[type=password] {   
-        width: 100%;   
-        margin: 8px 0;  
-        padding: 12px 20px;   
-        display: inline-block;   
-        border: 2px solid green;   
-        box-sizing: border-box;   
-    }  
- button:hover {   
-        opacity: 0.7;   
-    }   
-  .cancelbtn {   
-        width: auto;   
-        padding: 10px 18px;  
-        margin: 10px 5px;  
-    }   
-        
-     
- .container {   
-        padding: 25px;   
-        background-color: lightblue;  
-        vertical-align: middle;
-    }   
-</style>   
-</head>    
-<body>    
-    <center> <h1 class="heading"> Happy Home </h1> </center>   
-    <div class="loginForm">  
-        <div class="container heading" style="font-family: MISA Font Bold; font-size: 18px;">   
-            <label>Email: </label>   
-            <input type="text" placeholder="Nhập tên tài khoản" name="email" required id="email">  
-            <label>Mật khẩu: </label>   
-            <input type="password" placeholder="Nhập mật khẩu" name="password" required id="password">  
-            <button id="login_button" style="font-family: MISA Font Bold; font-size: 26px;" onclick="loginFunction()">Đăng nhập</button>   
-            <!-- <input type="checkbox" checked="checked"> Remember me   
-            <button type="button" class="cancelbtn"> Cancel</button>    -->
-            <!-- Quên <a href="#"> mật khẩu? </a>    -->
-            
-        </div>   
-    </div>    
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+    }
+</style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fa-solid fa-cube"></i>
+                </div>
+                <h1>IoT Hub</h1>
+                <p>Đăng nhập để tiếp tục</p>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="text" class="form-input" placeholder="Nhập email của bạn" id="email" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" class="form-input" placeholder="Nhập mật khẩu" id="password" required>
+                </div>
+            </div>
+
+            <button class="login-btn" onclick="loginFunction()">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Đăng nhập
+            </button>
+
+            <div class="login-footer">
+                <p>Hệ thống giám sát IoT thông minh</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="brand-text">© 2025 IoT Hub - Smart Monitoring System</div>
 
     <!-- nhúng các thư viện -->
     <script type="text/javascript" src="./js/jquery-3.6.0.min.js"></script>
-
-    <!-- Nhúng các js sử dụng riêng cho trang -->
-    <!-- <script src="/js/pages/employee.js"></script> -->
-    <!-- <script src="./js/pages/login.js"></script> -->
 
     <script>
         function loginFunction() {
