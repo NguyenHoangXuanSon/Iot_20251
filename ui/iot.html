@@ -19,6 +19,17 @@
             --text-gray: #6b7280;
             --danger: #ef4444;
             --success: #10b981;
+            --border-color: #e5e7eb;
+            --info-list-border: #f3f4f6;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-dark: #f1f5f9;
+            --text-gray: #94a3b8;
+            --border-color: #334155;
+            --info-list-border: #334155;
         }
 
         * {
@@ -33,7 +44,36 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            transition: background-color 0.3s ease;
         }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .theme-toggle .fa-sun { display: none; }
+        .theme-toggle .fa-moon { display: block; }
+        [data-theme="dark"] .theme-toggle .fa-sun { display: block; }
+        [data-theme="dark"] .theme-toggle .fa-moon { display: none; }
+        [data-theme="dark"] #nameUser { color: white; }
 
         /* --- SIDEBAR --- */
         .sidebar {
@@ -128,7 +168,7 @@
             background: white;
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-dark);
+            color: #1f2937;
             outline: none;
             cursor: pointer;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -201,12 +241,32 @@
 
         /* CHART SECTION */
         .chart-section {
-            background: white;
+            background: var(--card-bg);
             padding: 24px;
             border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             flex: 1;
             min-height: 400px;
+            transition: background 0.3s ease;
+        }
+
+        #chartContainer_temp,
+        #chartContainer_hum {
+            background: white !important;
+            border-radius: 8px;
+        }
+
+        /* Ẩn watermark CanvasJS Trial */
+        .canvasjs-chart-credit,
+        a[href*="canvasjs"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+
+        [data-theme="dark"] #chartContainer_temp,
+        [data-theme="dark"] #chartContainer_hum {
+            background: #1e293b !important;
         }
 
         .chart-header {
@@ -298,10 +358,11 @@
         }
 
         .info-panel {
-            background: white;
+            background: var(--card-bg);
             padding: 24px;
             border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: background 0.3s ease;
         }
 
         .info-panel h3 {
@@ -323,7 +384,7 @@
 
         .info-list li {
             padding: 12px 0;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--info-list-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -379,11 +440,12 @@
         }
 
         .summary-card {
-            background: white;
+            background: var(--card-bg);
             padding: 20px;
             border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             text-align: center;
+            transition: background 0.3s ease;
         }
 
         .summary-card .icon-large {
@@ -451,8 +513,14 @@
             </div>
             
             <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Chuyển chế độ sáng/tối">
+                    <i class="fa-solid fa-moon"></i>
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+                
                 <select class="room-select" id="roomListing" onchange="getDeviceByRoom()">
                     <!-- Option sẽ được load từ API -->
+                </select>
                 </select>
                 
                 <div class="user-profile">
@@ -520,7 +588,7 @@
 
         <div class="chart-section" id="chartSection" style="display: none;">
             <div class="chart-header">
-                <h2 id="chartTitle">Biểu đồ Nhiệt độ (DHT11)</h2>
+                <h2 id="chartTitle">Theo dõi nhiệt độ</h2>
                 <div class="status-badge">
                     <div class="dot"></div> Live
                 </div>
@@ -661,7 +729,7 @@
             $("#chartSection").show();
             $("#chartContainer_temp").show();
             $("#chartContainer_hum").hide();
-            $("#chartTitle").text("Biểu đồ Nhiệt độ (DHT11)");
+            $("#chartTitle").text("Theo dõi nhiệt độ");
             renderTemperature();
         });
 
@@ -674,7 +742,7 @@
             $("#chartSection").show();
             $("#chartContainer_temp").hide();
             $("#chartContainer_hum").show();
-            $("#chartTitle").text("Biểu đồ Độ ẩm (DHT11)");
+            $("#chartTitle").text("Theo dõi độ ẩm");
             renderHumidity();
         });
 
@@ -712,12 +780,24 @@
                     // Sắp xếp lại theo thời gian tăng dần để biểu đồ vẽ đúng
                     dataPoints.sort((a, b) => a.x - b.x);
 
+                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                     var chart = new CanvasJS.Chart("chartContainer_temp", {
                         animationEnabled: true,
-                        theme: "light2",
+                        backgroundColor: isDark ? "#1e293b" : "white",
                         title: { text: "" },
-                        axisX: { valueFormatString: "HH:mm:ss", labelFontSize: 12 },
-                        axisY: { title: "Nhiệt độ (°C)", suffix: "°C", gridColor: "#e7e7e7" },
+                        axisX: { 
+                            valueFormatString: "HH:mm:ss", 
+                            labelFontSize: 12,
+                            labelFontColor: isDark ? "#cbd5e1" : "#666",
+                            lineColor: isDark ? "#475569" : "#e7e7e7"
+                        },
+                        axisY: { 
+                            title: "Nhiệt độ (°C)", 
+                            suffix: "°C", 
+                            gridColor: isDark ? "#475569" : "#e7e7e7",
+                            labelFontColor: isDark ? "#cbd5e1" : "#666",
+                            titleFontColor: isDark ? "#e2e8f0" : "#333"
+                        },
                         data: [{
                             type: "splineArea",
                             xValueType: "dateTime",
@@ -757,12 +837,24 @@
                     // Sắp xếp lại theo thời gian tăng dần
                     dataPoints.sort((a, b) => a.x - b.x);
 
+                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                     var chart = new CanvasJS.Chart("chartContainer_hum", {
                         animationEnabled: true,
-                        theme: "light2",
+                        backgroundColor: isDark ? "#1e293b" : "white",
                         title: { text: "" },
-                        axisX: { valueFormatString: "HH:mm:ss", labelFontSize: 12 },
-                        axisY: { title: "Độ ẩm (%)", suffix: "%", gridColor: "#e7e7e7" },
+                        axisX: { 
+                            valueFormatString: "HH:mm:ss", 
+                            labelFontSize: 12,
+                            labelFontColor: isDark ? "#cbd5e1" : "#666",
+                            lineColor: isDark ? "#475569" : "#e7e7e7"
+                        },
+                        axisY: { 
+                            title: "Độ ẩm (%)", 
+                            suffix: "%", 
+                            gridColor: isDark ? "#475569" : "#e7e7e7",
+                            labelFontColor: isDark ? "#cbd5e1" : "#666",
+                            titleFontColor: isDark ? "#e2e8f0" : "#333"
+                        },
                         data: [{
                             type: "splineArea",
                             xValueType: "dateTime",
@@ -776,6 +868,30 @@
                 }
             });
         }
+
+        // Theme Toggle Function
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Re-render biểu đồ với màu mới nếu đang hiển thị
+            if ($(".icon__temperature").hasClass("active")) {
+                renderTemperature();
+            } else if ($(".icon__humidity").hasClass("active")) {
+                renderHumidity();
+            }
+        }
+
+        // Load saved theme on page load
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
     </script>
+</body>
+</html>
 </body>
 </html>
