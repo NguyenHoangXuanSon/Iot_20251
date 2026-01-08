@@ -526,6 +526,10 @@
                 <div class="user-profile">
                     <img src="https://i.pravatar.cc/150?img=12" alt="Admin" class="avatar">
                     <div style="font-size: 14px; font-weight: 600;" id="nameUser">Admin</div>
+
+                    <button onclick="logoutFunction()" style="background:none; border:none; color:red; margin-left:10px; cursor:pointer;" title="Đăng xuất">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
                 </div>
             </div>
         </header>
@@ -890,6 +894,17 @@
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
         })();
+        function logoutFunction() {
+        if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+            // Xóa thông tin đăng nhập trong bộ nhớ
+            localStorage.removeItem("token");
+            localStorage.removeItem("nameUser");
+            localStorage.removeItem("userEmail");
+            
+            // Chuyển hướng về trang đăng nhập
+            window.location.href = "index.html"; 
+        }
+    }
     </script>
 </body>
 </html>
