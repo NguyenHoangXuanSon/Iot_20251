@@ -476,6 +476,90 @@
                 grid-template-columns: 1fr;
             }
         }
+                /* Style cho nút Sửa tên phòng "Xịn" */
+        .btn-edit-room {
+            /* Kích thước vừa vặn với ô chọn phòng */
+            width: 44px;
+            height: 44px;
+            
+            /* Căn chỉnh icon vào giữa */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* Màu sắc & Viền */
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px; /* Bo góc mềm mại */
+            color: #6b7280; /* Màu xám nhạt mặc định */
+            
+            /* Cấu hình khác */
+            cursor: pointer;
+            margin-left: 8px; /* Cách ô chọn phòng một chút */
+            transition: all 0.2s ease; /* Hiệu ứng mượt mà */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Bóng mờ nhẹ */
+        }
+
+        /* Hiệu ứng khi di chuột vào (Hover) */
+        .btn-edit-room:hover {
+            border-color: #4f46e5; /* Viền chuyển màu tím chủ đạo */
+            color: #4f46e5; /* Icon chuyển tím */
+            background: #eef2ff; /* Nền chuyển tím siêu nhạt */
+            transform: translateY(-2px); /* Nổi lên nhẹ */
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Hiệu ứng khi bấm (Active) */
+        .btn-edit-room:active {
+            transform: translateY(0);
+        }
+
+        /* Dark mode (Nếu bạn dùng chế độ tối) */
+        [data-theme="dark"] .btn-edit-room {
+            background: #1e293b;
+            border-color: #334155;
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .btn-edit-room:hover {
+            border-color: #818cf8;
+            color: #818cf8;
+            background: rgba(129, 140, 248, 0.1);
+        }
+        /* --- DÁN BỔ SUNG ĐOẠN NÀY ĐỂ HIỆN POPUP --- */
+        
+        .modal-overlay {
+            display: none; /* Mặc định ẩn */
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); /* Màu nền tối */
+            backdrop-filter: blur(5px); /* Làm mờ nền sau */
+            z-index: 9999; 
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Khi Javascript thêm class này, popup sẽ hiện ra */
+        .modal-overlay.active {
+            display: flex !important;
+            opacity: 1;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        /* Dark mode cho popup */
+        [data-theme="dark"] .modal-card {
+            background: #1e293b;
+            color: #f1f5f9;
+        }
     </style>
 </head>
 
@@ -521,7 +605,9 @@
                 <select class="room-select" id="roomListing" onchange="getDeviceByRoom()">
                     <!-- Option sẽ được load từ API -->
                 </select>
-                </select>
+                <button class="btn-edit-room" onclick="openRenameModal()" title="Đổi tên phòng hiện tại">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
                 
                 <div class="user-profile">
                     <img src="https://i.pravatar.cc/150?img=12" alt="Admin" class="avatar">
@@ -895,18 +981,82 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
         })();
         function logoutFunction() {
-        if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
-            // Xóa thông tin đăng nhập trong bộ nhớ
-            localStorage.removeItem("token");
-            localStorage.removeItem("nameUser");
-            localStorage.removeItem("userEmail");
-            
-            // Chuyển hướng về trang đăng nhập
-            window.location.href = "index.html"; 
+            if(confirm("Bạn có chắc muốn đăng xuất?")) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("nameUser");
+                localStorage.removeItem("userEmail");
+                window.location.href = "index.html"; 
+            }
         }
-    }
+
+        // 2. Hàm mở Popup Đổi tên
+        function openRenameModal() {
+            let currentRoomId = $("#roomListing").val();
+            let currentRoomName = $("#roomListing option:selected").text();
+
+            if(!currentRoomId) {
+                alert("Vui lòng chọn một phòng trước khi đổi tên!");
+                return;
+            }
+            $("#inputNewRoomName").val(currentRoomName);
+            $("#modalRename").addClass("active"); // Kích hoạt class active trong CSS
+            $("#inputNewRoomName").focus();
+        }
+        
+        // 3. Hàm đóng Popup
+        function closeRenameModal() {
+            $("#modalRename").removeClass("active");
+        }
+
+        // 4. Hàm Lưu tên mới
+        function submitRenameRoom() {
+            let roomId = $("#roomListing").val();
+            let newName = $("#inputNewRoomName").val();
+            
+            if(!newName.trim()) {
+                alert("Tên phòng không được để trống!");
+                return;
+            }
+
+            $.ajax({
+                url: baseUrl + '/api/room', 
+                type: 'PUT', 
+                headers: { 'Authorization': token },
+                contentType: "application/json",
+                data: JSON.stringify({
+                    roomId: roomId,  
+                    name: newName    
+                }),
+                success: function(response) {
+                    alert("Đổi tên thành công!");
+                    $("#roomListing option:selected").text(newName); 
+                    $("#roomName").text(newName); 
+                    closeRenameModal(); // Đóng popup
+                },
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                    let msg = xhr.responseJSON ? xhr.responseJSON.err : "Lỗi cập nhật";
+                    alert("Lỗi: " + msg);
+                }
+            });
+        }
     </script>
-</body>
-</html>
+
+    <div id="modalRename" class="modal-overlay">
+        <div class="modal-card">
+            <h3 class="modal-title" style="font-size: 18px; font-weight: 700; margin-bottom: 15px; color: var(--text-dark);">Đổi tên phòng</h3>
+            
+            <div class="form-group">
+                <label style="display:block; margin-bottom: 8px; font-weight: 600; color: var(--text-gray);">Tên mới:</label>
+                <input type="text" id="inputNewRoomName" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none;">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="closeRenameModal()" style="flex: 1; padding: 10px; background: #f3f4f6; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: #333;">Hủy</button>
+                <button onclick="submitRenameRoom()" style="flex: 1; padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Lưu</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
